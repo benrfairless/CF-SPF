@@ -1,0 +1,9 @@
+name = "cf-spf-flattener"
+main = "src/index.js"
+compatibility_date = "2024-08-15"
+
+[env.production]
+name = "cf-spf-flattener"
+
+[env.staging]
+name = "cf-spf-flattener-staging"
