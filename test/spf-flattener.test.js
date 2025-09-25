@@ -124,6 +124,26 @@ describe('SPFFlattener', () => {
       expect(flattener.lookupCount).toBe(2);
     });
 
+    it('should flatten direct SPF record input', async () => {
+      // Mock included domain SPF lookup
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          Answer: [
+            {
+              type: 16,
+              data: '"v=spf1 ip4:10.0.0.0/8 ip6:2001:db8::/32 ~all"'
+            }
+          ]
+        })
+      });
+
+      const directSpf = 'v=spf1 ip4:192.168.1.0/24 include:spf.example.com ~all';
+      const result = await flattener.flatten(directSpf, true);
+      expect(result).toBe('v=spf1 ip4:192.168.1.0/24 ip4:10.0.0.0/8 ip6:2001:db8::/32 ~all');
+      expect(flattener.lookupCount).toBe(1); // No initial domain lookup
+    });
+
     it('should handle domain with no SPF record', async () => {
       mockFetch.mockResolvedValue({
         ok: true,

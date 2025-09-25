@@ -71,19 +71,24 @@ class SPFFlattener {
 
   /**
    * Flatten SPF record by resolving all includes
-   * @param {string} domain - Domain to flatten SPF for
+   * @param {string} domainOrSpf - Domain to flatten SPF for, or direct SPF record
+   * @param {boolean} isDirectSpf - Whether the input is a direct SPF record
    * @returns {Promise<string>} Flattened SPF record
    */
-  async flatten(domain) {
+  async flatten(domainOrSpf, isDirectSpf = false) {
     this.lookupCount = 0;
     this.voidLookupCount = 0;
 
-    const spfRecord = await this.resolveTXT(domain);
-    if (!spfRecord) {
-      throw new Error(`No SPF record found for domain: ${domain}`);
+    let spfRecord;
+    if (isDirectSpf) {
+      spfRecord = domainOrSpf;
+    } else {
+      spfRecord = await this.resolveTXT(domainOrSpf);
+      if (!spfRecord) {
+        throw new Error(`No SPF record found for domain: ${domainOrSpf}`);
+      }
+      this.lookupCount++;
     }
-
-    this.lookupCount++;
 
     const mechanisms = this.parseSPF(spfRecord);
     const flattenedMechanisms = [];
